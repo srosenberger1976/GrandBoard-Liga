@@ -390,20 +390,28 @@
         updateMultiScoreGrid(spiel);
     }
 
-    // Die neue, offene Bluetooth-Verbindungsmethode
+       // Die korrekte, offene Verbindungsmethode mit Kanal-Freigabe (GATT-Schnittstelle)
     connectBtn.addEventListener('click', async () => {
         try {
             statusDiv.innerText = "Suche Board...";
-     const dev = await navigator.bluetooth.requestDevice({ acceptAllDevices: true });
-
+            
+            // Akzeptiert jedes Gerät, schaltet aber den Datenkanal im Hintergrund frei
+            const dev = await navigator.bluetooth.requestDevice({ 
+                acceptAllDevices: true,
+                optionalServices: ['0000fff0-0000-1000-8000-00805f9b34fb']
+            });
             
             statusDiv.innerText = "Verbinde...";
             const server = await dev.gatt.connect();
-            const service = await server.getPrimaryService(GRANBOARD_SERVICE_UUID);
-            const characteristic = await service.getCharacteristic(GRANBOARD_NOTIFY_UUID);
+            
+            statusDiv.innerText = "Öffne Kanal...";
+            const service = await server.getPrimaryService('0000fff0-0000-1000-8000-00805f9b34fb');
+            const characteristic = await service.getCharacteristic('0000fff1-0000-1000-8000-00805f9b34fb');
             
             await characteristic.startNotifications();
-            statusDiv.innerText = "🟢 Online!"; statusDiv.style.color = "#00ea92"; connectBtn.style.display = "none";
+            statusDiv.innerText = "🟢 Online!"; 
+            statusDiv.style.color = "#00ea92"; 
+            connectBtn.style.display = "none";
             
             characteristic.addEventListener('characteristicvaluechanged', (e) => {
                 let bytes = []; 
@@ -414,8 +422,19 @@
                 let t = verarbeiteTreffer(bytes); 
                 if (t) spieleLogikAusfuehren(t);
             });
-        } catch (err) { statusDiv.innerText = "Fehler: " + err.message; }
+
+            dev.addEventListener('gattserverdisconnected', () => {
+                statusDiv.innerText = "🔴 Verbindung verloren!";
+                statusDiv.style.color = "#dc3545";
+                connectBtn.style.display = "block";
+            });
+
+        } catch (err) { 
+            statusDiv.innerText = "Fehler: " + err.message; 
+            console.error(err);
+        }
     });
 </script>
 </body>
 </html>
+
