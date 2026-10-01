@@ -358,44 +358,79 @@
 
     function verarbeiteTreffer(bytes) {
         if (!bytes || bytes.length < 2) return null;
-        let mult = bytes[0], wert = bytes[1];
-        if (wert === 25) return { punkte: (mult === 2 || mult === 0x82) ? 50 : 25, text: "Bull" };
+        
+        // Liest die Bytes absolut sicher aus dem Array
+        let mult = bytes[0]; 
+        let wert = bytes[1];
+        
+        // Bullseye-Erkennung (GranBoard sendet bei Bull den Wert 25)
+        if (wert === 25) {
+            return { punkte: (mult === 2 || mult === 0x82) ? 50 : 25, text: "Bullseye" };
+        }
+        
+        // Sicherheits-Check: Gültige Dartsegmente liegen zwischen 1 und 20
         if (wert < 1 || wert > 20) return null;
+        
+        // Bitmaske anwenden, um Single (1), Double (2) oder Triple (3) zu bestimmen
         let art = mult & 0x0F;
-        return { punkte: wert * (art === 3 ? 3 : (art === 2 ? 2 : 1)), text: (art === 3 ? "T" : (art === 2 ? "D" : "S")) + wert };
+        
+        let multiplikator = 1;
+        let praefix = "S"; // Single
+        
+        if (art === 3) { multiplikator = 3; praefix = "T"; } // Triple
+        else if (art === 2) { multiplikator = 2; praefix = "D"; } // Double
+        
+        return { 
+            punkte: wert * multiplikator, 
+            text: praefix + wert 
+        };
     }
 
     function spieleLogikAusfuehren(treffer) {
         let spiel = ligaSpiele[currentMatchIndex];
-        let aktK = spiel.reihenfolge[activePlayerIdx], aktName = activePlayerNames[aktK];
+        let aktK = spiel.reihenfolge[activePlayerIdx];
+        let aktName = activePlayerNames[aktK];
+        
         wurfDiv.innerText = `${aktName}: ${treffer.text}`;
-        historyDiv.innerHTML = `🎯 [${aktK}] ${treffer.text}<br>` + historyDiv.innerHTML.replace("<b>Letzte Würfe:</b><br>", "");
+        
+        // Wurfverlauf befüllen
+        let hist = historyDiv;
+        hist.innerHTML = `🎯 [${aktK}] ${treffer.text}<br>` + hist.innerHTML.replace("<b>Letzte Würfe:</b><br>", "");
 
         let wurfGueltig = true;
 
         if (spiel.type === "501") {
             let spielerScore = livePlayerScores[aktK];
-            if (spielerScore - treffer.punkte === 0) { beendeMatch(aktK); return; }
+            if (spielerScore - treffer.punkte === 0) { 
+                beendeMatch(aktK); 
+                return; 
+            }
             else if (spielerScore - treffer.punkte < 0 || spielerScore - treffer.punkte === 1) { 
                 wurfDiv.innerText = `💥 ${aktName} überworfen!`;
                 wurfGueltig = false;
-                dartCount = 3; 
+                dartCount = 3; // Durchgang für diesen Spieler sofort beenden
             } else { 
                 livePlayerScores[aktK] -= treffer.punkte; 
                 currentScore = livePlayerScores[aktK];
                 scoreDisplay.innerText = currentScore;
             }
         } else {
-            if (livePlayerScores[aktK] - 1 <= 0) { beendeMatch(aktK); return; }
-            else { 
+            // Cricket-Modus: Zählt die benötigten Treffer runter
+            if (livePlayerScores[aktK] - 1 <= 0) { 
+                beendeMatch(aktK); 
+                return; 
+            } else { 
                 livePlayerScores[aktK]--; 
                 currentScore = livePlayerScores[aktK];
                 scoreDisplay.innerText = `Hits: ${currentScore}`; 
             }
         }
 
-        if (wurfGueltig) { dartCount++; }
+        if (wurfGueltig) { 
+            dartCount++; 
+        }
 
+        // Wenn 3 Darts geworfen wurden (oder überworfen wurde), wechselt der Spieler
         if (dartCount >= 3 || !wurfGueltig) { 
             dartCount = 0; 
             activePlayerIdx = (activePlayerIdx + 1) % spiel.reihenfolge.length; 
@@ -405,29 +440,42 @@
         updateMultiScoreGrid(spiel);
     }
 
+    // Startet das Bluetooth-Kopplungsfenster
     connectBtn.addEventListener('click', async () => {
         try {
             statusDiv.innerText = "Suche Board...";
-  const dev = await navigator.bluetooth.requestDevice({ 
-    acceptAllDevices: true,
-    optionalServices: [GRANBOARD_SERVICE_UUID]
-});
-
+            const dev = await navigator.bluetooth.requestDevice({ 
+                acceptAllDevices: true,
+                optionalServices: [GRANBOARD_SERVICE_UUID] 
+            });
+            
+            statusDiv.innerText = "Verbinde...";
             const server = await dev.gatt.connect();
             const service = await server.getPrimaryService(GRANBOARD_SERVICE_UUID);
             const characteristic = await service.getCharacteristic(GRANBOARD_NOTIFY_UUID);
-            await characteristic.startNotifications();
-            statusDiv.innerText = "🟢 Online!"; statusDiv.style.color = "#00ea92"; connectBtn.style.display = "none";
             
+            await characteristic.startNotifications();
+            statusDiv.innerText = "🟢 Online!"; 
+            statusDiv.style.color = "#00ea92"; 
+            connectBtn.style.display = "none";
+            
+            // Die reparierte Datenauslesung für Web-Bluetooth im Browser
             characteristic.addEventListener('characteristicvaluechanged', (e) => {
-                let bytes = []; for (let i=0; i<e.target.value.byteLength; i++) bytes.push(e.target.value.getUint8(i));
-                let t = verarbeiteTreffer(bytes); if (t) spieleLogikAusfuehren(t);
+                let bytes = []; 
+                let dataView = e.target.value;
+                for (let i = 0; i < dataView.byteLength; i++) {
+                    bytes.push(dataView.getUint8(i));
+                }
+                
+                let t = verarbeiteTreffer(bytes); 
+                if (t) {
+                    spieleLogikAusfuehren(t);
+                }
             });
-        } catch (err) { statusDiv.innerText = "Fehler: " + err.message; }
+        } catch (err) { 
+            statusDiv.innerText = "Fehler: " + err.message; 
+        }
     });
 </script>
 </body>
 </html>
-
-
-
