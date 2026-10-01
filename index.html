@@ -448,11 +448,11 @@
     connectBtn.addEventListener('click', async () => {
         try {
             statusDiv.innerText = "Suche Board...";
-            const dev = await navigator.bluetooth.requestDevice({ 
-                acceptAllDevices: true,
-                optionalServices: [GRANBOARD_SERVICE_UUID] 
-            });
-            
+const dev = await navigator.bluetooth.requestDevice({ 
+    acceptAllDevices: true,
+    optionalServices: [GRANBOARD_SERVICE_UUID] 
+});
+
             statusDiv.innerText = "Verbinde...";
             const server = await dev.gatt.connect();
             const service = await server.getPrimaryService(GRANBOARD_SERVICE_UUID);
@@ -461,7 +461,7 @@
             await characteristic.startNotifications();
             statusDiv.innerText = "🟢 Online!"; 
             statusDiv.style.color = "#00ea92"; 
-            connectBtn.style.display = "none";
+
             
             // Die reparierte Datenauslesung für Web-Bluetooth im Browser
             characteristic.addEventListener('characteristicvaluechanged', (e) => {
