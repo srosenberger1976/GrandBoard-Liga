@@ -408,7 +408,11 @@
     connectBtn.addEventListener('click', async () => {
         try {
             statusDiv.innerText = "Suche Board...";
-            const dev = await navigator.bluetooth.requestDevice({ filters: [{ namePrefix: 'GRANBOARD' }, { services: [GRANBOARD_SERVICE_UUID] }] });
+  const dev = await navigator.bluetooth.requestDevice({ 
+    acceptAllDevices: true,
+    optionalServices: [GRANBOARD_SERVICE_UUID]
+});
+
             const server = await dev.gatt.connect();
             const service = await server.getPrimaryService(GRANBOARD_SERVICE_UUID);
             const characteristic = await service.getCharacteristic(GRANBOARD_NOTIFY_UUID);
