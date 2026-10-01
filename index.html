@@ -448,11 +448,17 @@
     connectBtn.addEventListener('click', async () => {
         try {
             statusDiv.innerText = "Suche Board...";
-const dev = await navigator.bluetooth.requestDevice({ 
-    acceptAllDevices: true,
-    optionalServices: [GRANBOARD_SERVICE_UUID] 
-});
-
+            
+            // Präziser Such-Filter erhöht die Reichweite im Browser enorm!
+            const dev = await navigator.bluetooth.requestDevice({ 
+                filters: [
+                    { namePrefix: 'GRANBOARD' },
+                    { namePrefix: 'GRAN' },
+                    { services: [GRANBOARD_SERVICE_UUID] }
+                ],
+                optionalServices: [GRANBOARD_SERVICE_UUID]
+            });
+            
             statusDiv.innerText = "Verbinde...";
             const server = await dev.gatt.connect();
             const service = await server.getPrimaryService(GRANBOARD_SERVICE_UUID);
@@ -461,9 +467,8 @@ const dev = await navigator.bluetooth.requestDevice({
             await characteristic.startNotifications();
             statusDiv.innerText = "🟢 Online!"; 
             statusDiv.style.color = "#00ea92"; 
-
+            connectBtn.style.display = "none";
             
-            // Die reparierte Datenauslesung für Web-Bluetooth im Browser
             characteristic.addEventListener('characteristicvaluechanged', (e) => {
                 let bytes = []; 
                 let dataView = e.target.value;
@@ -480,6 +485,7 @@ const dev = await navigator.bluetooth.requestDevice({
             statusDiv.innerText = "Fehler: " + err.message; 
         }
     });
+
 </script>
 </body>
 </html>
