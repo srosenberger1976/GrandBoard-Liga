@@ -3,23 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GranBoard Liga MKK</title>
+    <title>GranBoard Liga MKK - Native App</title>
     <style>
         body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0c0c0c; color: #fff; margin: 0; padding: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-        
-        /* OBERE TAB-NAVIGATION */
         .tab-navigation { display: flex; background: #141414; border-bottom: 2px solid #222; width: 100%; }
         .tab-btn { flex: 1; padding: 12px; background: none; border: none; color: #888; font-size: 14px; font-weight: bold; cursor: pointer; text-transform: uppercase; border-bottom: 3px solid transparent; transition: 0.2s; }
         .tab-btn.active { color: #00ea92; border-bottom-color: #00ea92; background: rgba(0,234,146,0.05); }
-        
         .tab-content { display: none; height: calc(100vh - 50px); padding: 10px; box-sizing: border-box; }
         .tab-content.active { display: flex; }
-        
-        /* SEITE 1: SPIELFELD RASTER */
         .game-layout { display: flex; flex-direction: column; width: 100%; height: 100%; gap: 10px; }
         .top-row { display: flex; justify-content: space-between; align-items: center; background: #141414; padding: 6px 12px; border-radius: 6px; }
-        
-        /* SPIELER-ZÄHLER MATRIX (Für 2 oder 4 Spieler parallel) */
         .multi-score-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; width: 100%; margin-bottom: 5px; }
         .player-card { background: #141414; border: 1px solid #222; border-radius: 6px; padding: 6px; text-align: center; }
         .player-card.active { border-color: #ffc107; background: rgba(255,193,7,0.05); }
@@ -27,18 +20,13 @@
         .player-card.active .p-name { color: #ffc107; }
         .player-card .p-score { font-size: 28px; font-weight: bold; font-family: monospace; color: #fff; margin-top: 2px; }
         .player-card.active .p-score { color: #00ea92; }
-
         .center-match { background: #111; border-radius: 8px; border: 1px solid #222; text-align: center; padding: 10px; flex-grow: 1; display: flex; flex-direction: column; justify-content: center; }
         .score-board { font-size: 14vh; font-weight: bold; color: #00ea92; font-family: monospace; margin: 0; line-height: 1; }
         .big-player { font-size: 28px; color: #fff; font-weight: bold; background: #1c1c1c; border: 1px solid #ffc107; padding: 8px; border-radius: 6px; width: 80%; margin: 8px auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
         #wurf { font-size: 16px; color: #ffc107; font-weight: bold; min-height: 20px; margin-bottom: 4px; }
         #history { font-size: 12px; color: #888; background: #070707; padding: 6px; border-radius: 4px; text-align: left; height: 50px; overflow-y: auto; border: 1px solid #111; }
-        
-        /* SEITE 2: SPIELBERICHT & WECHSEL RASTER */
         .report-layout { display: grid; grid-template-columns: 1fr 260px; gap: 10px; width: 100%; height: 100%; overflow: hidden; }
         .scroll-panel { background: #141414; border-radius: 8px; padding: 10px; display: flex; flex-direction: column; overflow-y: auto; box-sizing: border-box; }
-        
         .match-row { display: flex; align-items: center; padding: 5px; border-bottom: 1px solid #1c1c1c; font-size: 12px; color: #aaa; min-height: 24px; }
         .match-row.active { background: rgba(0, 234, 146, 0.12); border-left: 3px solid #00ea92; color: #fff; font-weight: bold; }
         .match-row.done { color: #444; background: rgba(0,0,0,0.1); }
@@ -46,18 +34,16 @@
         .m-modus { width: 85px; color: #ffc107; }
         .m-vs { flex-grow: 1; }
         .m-score { width: 30px; text-align: right; font-weight: bold; color: #00ea92; }
-
         .rank-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 5px; }
-        .rank-table th, .rank-table td { padding: 5px 3px; text-align: left; border-bottom: 1px solid #1c1c1c; }
+        .rank-table th, .rank-table td { padding: 5px 3px; text-align: left; border-bottom: 1px solid #333; }
         .rank-table th { background: #111; color: #00ea92; }
         #subLog { font-size: 11px; color: #ffc107; background: #070707; padding: 5px; border-radius: 4px; max-height: 60px; overflow-y: auto; border: 1px solid #111; margin-top: 4px; }
         select { padding: 5px; background: #222; color: #fff; border: 1px solid #444; border-radius: 4px; font-size: 12px; }
-        
-        /* SETUP WINDOW */
         .setup-panel { background: #1a1a1a; padding: 15px; border-radius: 8px; width: 95%; max-width: 750px; margin: auto; box-shadow: 0 4px 10px rgba(0,0,0,0.5); box-sizing: border-box; }
         .setup-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 10px; }
         .input-group { display: grid; grid-template-columns: 40px 1fr; gap: 5px; align-items: center; margin-bottom: 4px; font-size: 12px; }
         input { padding: 5px; background: #2a2a2a; border: 1px solid #444; color: #fff; border-radius: 4px; font-size: 12px; }
+        button { padding: 8px 12px; font-size: 13px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 4px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -92,29 +78,23 @@
     <button onclick="startLigaSpiel()" style="width: 100%; background: #28a745; padding:10px; border-radius:4px; font-size:14px; font-weight:bold;">🚀 Namen bestätigen & Spiel starten</button>
 </div>
 
-<!-- HAUPT-ANWENDUNG (Wird nach Setup geladen) -->
+<!-- HAUPT-ANWENDUNG -->
 <div id="mainApp" style="display: none; width:100%; height:100vh;">
-    <!-- TAB BUTTONS -->
     <div class="tab-navigation">
         <button class="tab-btn active" id="tabBtnGame" onclick="switchTab('game')">🎯 Spielmodus & Zähler</button>
         <button class="tab-btn" id="tabBtnReport" onclick="switchTab('report')">📋 Spielbericht & Wechsel</button>
     </div>
 
-
     <!-- SEITE 1: DART-SPIELMODUS & ALLE SPIELERZÄHLER -->
     <div class="tab-content active" id="tabContentGame">
         <div class="game-layout">
             <div class="top-row">
-                <button id="connectBtn" style="padding: 6px 12px; font-size:12px;">🔵 Board verbinden</button>
+                <button id="connectBtn" style="padding: 6px 12px; font-size:12px;">🔵 Board nativ verbinden</button>
                 <div id="status" style="font-size:12px; color:#ffc107; font-weight:bold;">Status: Getrennt</div>
             </div>
 
-            <!-- PARALLELE ANZEIGE ALLER 2 BZW. 4 AKTUELLEN SPIELERZÄHLER -->
-            <div class="multi-score-grid" id="multiScoreGrid">
-                <!-- Wird automatisch per JavaScript mit 2 oder 4 Feldern befüllt -->
-            </div>
+            <div class="multi-score-grid" id="multiScoreGrid"></div>
 
-            <!-- ZENTRALE SCOREANZEIGE (GROSS) -->
             <div class="center-match">
                 <div id="activeMatchTitle" style="font-size:12px; color:#aaa; font-weight:bold; text-transform:uppercase;">Warte auf Start...</div>
                 <div id="activeMatchModus" style="color:#ffc107; font-size:11px; margin-bottom:5px;">-</div>
@@ -128,10 +108,9 @@
         </div>
     </div>
 
-    <!-- SEITE 2: DER REINE SPIELBERICHT & DIE AUSWECHSLUNGEN -->
+    <!-- SEITE 2: SPIELBERICHT & DIE AUSWECHSLUNGEN -->
     <div class="tab-content" id="tabContentReport">
         <div class="report-layout">
-            <!-- Linke Spalte: Alle 34 Matches -->
             <div class="scroll-panel">
                 <h2 style="font-size:13px; color:#00ea92; margin-bottom:5px;">📋 Offizieller MKK Liga-Spielbericht</h2>
                 <div style="display:flex; justify-content:space-between; margin-bottom:6px; font-size:12px; font-weight:bold; color:#00ea92; background:rgba(0,0,0,0.2); padding:4px; border-radius:4px;">
@@ -141,7 +120,6 @@
                 <div style="flex-grow:1; overflow-y:auto;" id="spielplanContainer"></div>
             </div>
 
-            <!-- Rechte Spalte: Auswechselbank & Live-Rangliste -->
             <div class="scroll-panel" style="background:#111;">
                 <h2 style="font-size:13px; color:#ffc107;">🔄 Auswechslung vornehmen</h2>
                 <div style="display: flex; gap: 4px; margin: 5px 0; align-items:center; justify-content:space-between;">
@@ -165,6 +143,7 @@
 </div>
 
 <script>
+
     // Der komplette Spielplan der MKK-Liga
     const ligaSpiele = [
         { id: 1,  modus: "501 MO/Doppel", heim: "H1 + H2", gast: "G2 + G4", type: "501", reihenfolge: ["H1", "G2", "H2", "G4"] },
@@ -203,23 +182,14 @@
         { id: 34, modus: "501 MO/Doppel", heim: "H1 + H3", gast: "G4 + G3", type: "501", reihenfolge: ["H1", "G4", "H3", "G3"] }
     ];
 
-
     const GRANBOARD_SERVICE_UUID = '0000fff0-0000-1000-8000-00805f9b34fb';
     const GRANBOARD_NOTIFY_UUID  = '0000fff1-0000-1000-8000-00805f9b34fb';
 
-  
-
-
-
     let currentMatchIndex = 0, currentScore = 501, heimGesamtPunkte = 0, gastGesamtPunkte = 0, activePlayerIdx = 0, dartCount = 0;
-    let activePlayerNames = {}, spielerPunkte = {};
-    
-    // Speicher für die aktuellen Scores der einzelnen Spieler innerhalb des Belegs
-    let livePlayerScores = {};
+    let activePlayerNames = {}, spielerPunkte = {}, livePlayerScores = {};
 
     const connectBtn = document.getElementById('connectBtn'), statusDiv = document.getElementById('status'), wurfDiv = document.getElementById('wurf'), scoreDisplay = document.getElementById('scoreDisplay'), historyDiv = document.getElementById('history');
 
-    // Steuert den Wechsel zwischen den beiden Seiten (Tabs)
     function switchTab(tab) {
         document.getElementById('tabBtnGame').classList.toggle('active', tab === 'game');
         document.getElementById('tabBtnReport').classList.toggle('active', tab === 'report');
@@ -240,16 +210,13 @@
         updateSubstitutionDropdowns(); renderSpielbericht(); updateRangliste(); ladeAktuellesMatch();
     }
 
-    // Generiert die 2 oder 4 Zähler-Boxen am oberen Rand des Spielfelds
     function updateMultiScoreGrid(spiel) {
         const grid = document.getElementById('multiScoreGrid');
         grid.innerHTML = "";
-        
         spiel.reihenfolge.forEach((k, idx) => {
             let name = activePlayerNames[k];
             let istAmWurf = (idx === activePlayerIdx);
             let score = livePlayerScores[k];
-            
             grid.innerHTML += `
                 <div class="player-card ${istAmWurf ? 'active' : ''}">
                     <div class="p-name">${name} (${k})</div>
@@ -328,7 +295,6 @@
         document.getElementById('activeMatchTitle').innerText = `Spiel ${spiel.id}: ${spiel.modus}`;
         activePlayerIdx = 0; dartCount = 0;
         
-        // Initialisiere die parallelen Live-Zähler für jeden Spieler in diesem Leg
         livePlayerScores = {};
         spiel.reihenfolge.forEach(k => {
             livePlayerScores[k] = (spiel.type === "501") ? 501 : 5;
@@ -360,81 +326,61 @@
 
     function skipMatch() { if (currentMatchIndex < ligaSpiele.length) { ligaSpiele[currentMatchIndex].ergebnis = "Skipped"; currentMatchIndex++; ladeAktuellesMatch(); } }
 
+    // Das neue Auswertungsprotokoll für den direkten Datenstream
     function verarbeiteTreffer(bytes) {
         if (!bytes || bytes.length < 2) return null;
         
-        // Liest die Bytes absolut sicher aus dem Array
+        // Direktes Auslesen der Bit-Schnittstelle
         let mult = bytes[0]; 
         let wert = bytes[1];
         
-        // Bullseye-Erkennung (GranBoard sendet bei Bull den Wert 25)
         if (wert === 25) {
-            return { punkte: (mult === 2 || mult === 0x82) ? 50 : 25, text: "Bullseye" };
+            return { punkte: (mult === 2 || mult === 0x82) ? 50 : 25, text: "Bull" };
         }
         
-        // Sicherheits-Check: Gültige Dartsegmente liegen zwischen 1 und 20
         if (wert < 1 || wert > 20) return null;
         
-        // Bitmaske anwenden, um Single (1), Double (2) oder Triple (3) zu bestimmen
         let art = mult & 0x0F;
-        
         let multiplikator = 1;
-        let praefix = "S"; // Single
+        let praefix = "S"; 
         
-        if (art === 3) { multiplikator = 3; praefix = "T"; } // Triple
-        else if (art === 2) { multiplikator = 2; praefix = "D"; } // Double
+        if (art === 3) { multiplikator = 3; praefix = "T"; } 
+        else if (art === 2) { multiplikator = 2; praefix = "D"; } 
         
-        return { 
-            punkte: wert * multiplikator, 
-            text: praefix + wert 
-        };
+        return { punkte: wert * multiplikator, text: praefix + wert };
     }
 
     function spieleLogikAusfuehren(treffer) {
         let spiel = ligaSpiele[currentMatchIndex];
-        let aktK = spiel.reihenfolge[activePlayerIdx];
-        let aktName = activePlayerNames[aktK];
-        
+        let aktK = spiel.reihenfolge[activePlayerIdx], aktName = activePlayerNames[aktK];
         wurfDiv.innerText = `${aktName}: ${treffer.text}`;
-        
-        // Wurfverlauf befüllen
-        let hist = historyDiv;
-        hist.innerHTML = `🎯 [${aktK}] ${treffer.text}<br>` + hist.innerHTML.replace("<b>Letzte Würfe:</b><br>", "");
+        historyDiv.innerHTML = `🎯 [${aktK}] ${treffer.text}<br>` + historyDiv.innerHTML.replace("<b>Letzte Würfe:</b><br>", "");
 
         let wurfGueltig = true;
 
         if (spiel.type === "501") {
             let spielerScore = livePlayerScores[aktK];
-            if (spielerScore - treffer.punkte === 0) { 
-                beendeMatch(aktK); 
-                return; 
-            }
+            if (spielerScore - treffer.punkte === 0) { beendeMatch(aktK); return; }
             else if (spielerScore - treffer.punkte < 0 || spielerScore - treffer.punkte === 1) { 
                 wurfDiv.innerText = `💥 ${aktName} überworfen!`;
                 wurfGueltig = false;
-                dartCount = 3; // Durchgang für diesen Spieler sofort beenden
+                dartCount = 3; 
             } else { 
                 livePlayerScores[aktK] -= treffer.punkte; 
                 currentScore = livePlayerScores[aktK];
                 scoreDisplay.innerText = currentScore;
             }
         } else {
-            // Cricket-Modus: Zählt die benötigten Treffer runter
-            if (livePlayerScores[aktK] - 1 <= 0) { 
-                beendeMatch(aktK); 
-                return; 
-            } else { 
+            if (livePlayerScores[aktK] - 1 <= 0) { beendeMatch(aktK); return; }
+            else { 
                 livePlayerScores[aktK]--; 
                 currentScore = livePlayerScores[aktK];
                 scoreDisplay.innerText = `Hits: ${currentScore}`; 
             }
         }
 
-        if (wurfGueltig) { 
-            dartCount++; 
-        }
+        if (wurfGueltig) { dartCount++; }
 
-        // Wenn 3 Darts geworfen wurden (oder überworfen wurde), wechselt der Spieler
         if (dartCount >= 3 || !wurfGueltig) { 
             dartCount = 0; 
             activePlayerIdx = (activePlayerIdx + 1) % spiel.reihenfolge.length; 
@@ -444,19 +390,13 @@
         updateMultiScoreGrid(spiel);
     }
 
-    // Startet das Bluetooth-Kopplungsfenster
+    // Die neue, offene Bluetooth-Verbindungsmethode
     connectBtn.addEventListener('click', async () => {
         try {
             statusDiv.innerText = "Suche Board...";
-            
-            // Präziser Such-Filter erhöht die Reichweite im Browser enorm!
             const dev = await navigator.bluetooth.requestDevice({ 
-                filters: [
-                    { namePrefix: 'GRANBOARD' },
-                    { namePrefix: 'GRAN' },
-                    { services: [GRANBOARD_SERVICE_UUID] }
-                ],
-                optionalServices: [GRANBOARD_SERVICE_UUID]
+                acceptAllDevices: true,
+                optionalServices: [GRANBOARD_SERVICE_UUID] 
             });
             
             statusDiv.innerText = "Verbinde...";
@@ -465,9 +405,7 @@
             const characteristic = await service.getCharacteristic(GRANBOARD_NOTIFY_UUID);
             
             await characteristic.startNotifications();
-            statusDiv.innerText = "🟢 Online!"; 
-            statusDiv.style.color = "#00ea92"; 
-            connectBtn.style.display = "none";
+            statusDiv.innerText = "🟢 Online!"; statusDiv.style.color = "#00ea92"; connectBtn.style.display = "none";
             
             characteristic.addEventListener('characteristicvaluechanged', (e) => {
                 let bytes = []; 
@@ -475,17 +413,11 @@
                 for (let i = 0; i < dataView.byteLength; i++) {
                     bytes.push(dataView.getUint8(i));
                 }
-                
                 let t = verarbeiteTreffer(bytes); 
-                if (t) {
-                    spieleLogikAusfuehren(t);
-                }
+                if (t) spieleLogikAusfuehren(t);
             });
-        } catch (err) { 
-            statusDiv.innerText = "Fehler: " + err.message; 
-        }
+        } catch (err) { statusDiv.innerText = "Fehler: " + err.message; }
     });
-
 </script>
 </body>
 </html>
