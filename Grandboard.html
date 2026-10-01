@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>GranBoard Liga-Manager MKK</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #121212; color: #fff; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 20px; }
+        .row-container { display: flex; gap: 20px; justify-content: center; width: 100%; max-width: 1100px; }
+        .panel { background: #1e1e1e; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); padding: 20px; box-sizing: border-box; }
+        .setup-panel { width: 100%; max-width: 1100px; }
+        .report-panel { width: 450px; max-height: 75vh; overflow-y: auto; }
+        .game-panel { width: 630px; display: flex; flex-direction: column; align-items: center; }
+        .rank-panel { width: 100%; max-width: 1100px; margin-top: 10px; }
+        h2 { color: #00ea92; margin-top: 0; font-size: 20px; border-bottom: 2px solid #333; padding-bottom: 10px; }
+        h3 { color: #ffc107; margin-top: 10px; font-size: 15px; }
+        .setup-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 15px; }
+        .input-group { display: grid; grid-template-columns: 50px 1fr; gap: 5px; align-items: center; margin-bottom: 5px; }
+        input { padding: 6px; background: #333; border: 1px solid #555; color: #fff; border-radius: 4px; }
+        .match-row { display: flex; align-items: center; padding: 8px; border-bottom: 1px solid #2a2a2a; font-size: 13px; color: #ccc; }
+        .match-row.active { background: rgba(0, 234, 146, 0.15); border-left: 4px solid #00ea92; color: #fff; font-weight: bold; }
+        .match-row.done { color: #666; background: rgba(0,0,0,0.2); }
+        .m-id { width: 25px; font-weight: bold; color: #888; }
+        .m-modus { width: 110px; color: #ffc107; }
+        .m-vs { flex-grow: 1; }
+        .m-score { width: 40px; text-align: right; font-weight: bold; }
+        button { padding: 12px 24px; font-size: 16px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 6px; font-weight: bold; }
+        button:hover { background: #0056b3; }
+        .sub-btn { padding: 6px 12px; font-size: 13px; background: #ffc107; color: #000; }
+        .sub-btn:hover { background: #e0a800; }
+        .current-match-box { background: #111; width: 100%; text-align: center; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #333; box-sizing: border-box; }
+        .score-board { font-size: 80px; font-weight: bold; color: #00ea92; font-family: monospace; margin: 10px 0; }
+        .big-player { font-size: 32px; color: #fff; font-weight: bold; background: #2a2a2a; border: 2px solid #ffc107; padding: 10px; border-radius: 6px; width: 90%; margin: 10px auto; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
+        .rank-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
+        .rank-table th, .rank-table td { padding: 8px; text-align: left; border-bottom: 1px solid #333; }
+        .rank-table th { background: #252525; color: #00ea92; }
+        #subLog { font-size: 12px; color: #ffc107; background: #111; padding: 8px; border-radius: 4px; max-height: 80px; overflow-y: auto; width: 100%; text-align: left; box-sizing: border-box; margin-top: 5px; }
+    </style>
+</head>
+<body>
+
+<!-- SETUP FORMULAR: SPIELERNAMEN VOR DEM SPIEL -->
+<div class="panel setup-panel" id="setupForm">
+    <h2>👥 MKK Liga-Setup: Spieler & Positionen eingeben</h2>
+    <div class="setup-grid">
+        <div>
+            <h3>Heimteam Stammspieler</h3>
+            <div class="input-group"><label>H1:</label><input type="text" id="input_H1" value="Stefan"></div>
+            <div class="input-group"><label>H2:</label><input type="text" id="input_H2" value="Paul"></div>
+            <div class="input-group"><label>H3:</label><input type="text" id="input_H3" value="Heim 3"></div>
+            <div class="input-group"><label>H4:</label><input type="text" id="input_H4" value="Heim 4"></div>
+            <h3>Heimteam Ersatzspieler</h3>
+            <div class="input-group"><label>HE1:</label><input type="text" id="input_HE1" value="Ersatz H1"></div>
+            <div class="input-group"><label>HE2:</label><input type="text" id="input_HE2" value="Ersatz H2"></div>
+            <div class="input-group"><label>HE3:</label><input type="text" id="input_HE3" value="Ersatz H3"></div>
+            <div class="input-group"><label>HE4:</label><input type="text" id="input_HE4" value="Ersatz H4"></div>
+        </div>
+        <div>
+            <h3>Gastteam Stammspieler</h3>
+            <div class="input-group"><label>G1:</label><input type="text" id="input_G1" value="Gast 1"></div>
+            <div class="input-group"><label>G2:</label><input type="text" id="input_G2" value="Gast 2"></div>
+            <div class="input-group"><label>G3:</label><input type="text" id="input_G3" value="Gast 3"></div>
+            <div class="input-group"><label>G4:</label><input type="text" id="input_G4" value="Gast 4"></div>
+            <h3>Gastteam Ersatzspieler</h3>
+            <div class="input-group"><label>GE1:</label><input type="text" id="input_GE1" value="Ersatz G1"></div>
+            <div class="input-group"><label>GE2:</label><input type="text" id="input_GE2" value="Ersatz G2"></div>
+            <div class="input-group"><label>GE3:</label><input type="text" id="input_GE3" value="Ersatz G3"></div>
+            <div class="input-group"><label>GE4:</label><input type="text" id="input_GE4" value="Ersatz G4"></div>
+        </div>
+    </div>
+    <button onclick="startLigaSpiel()" style="width: 100%; background: #28a745;">🚀 Namen bestätigen & Spiel starten</button>
+</div>
+
+<!-- SPIEL-INTERFACE -->
+<div class="row-container" id="mainInterface" style="display: none;">
+    <div class="panel report-panel">
+        <h2>📋 Liga-Spielbericht (MKK)</h2>
+        <div style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:14px; font-weight:bold; color:#00ea92;">
+            <span>Gesamtstand:</span>
+            <span id="totalLeagueScore">Heim 0 : 0 Gast</span>
+        </div>
+        <div id="spielplanContainer"></div>
+    </div>
+
+    <div class="panel game-panel">
+        <h2>🎯 Aktuelles Match</h2>
+        <button id="connectBtn" style="width:100%;">🔵 GranBoard suchen & verbinden</button>
+        <div id="status" style="width:100%; text-align:center; margin:10px 0; color:#ffc107;">Status: Nicht verbunden</div>
+
+        <div class="current-match-box" style="padding: 10px; border-color: #ffc107;">
+            <div style="font-size: 13px; font-weight: bold; margin-bottom: 5px; color: #ffc107;">🔄 Auswechslung durchführen:</div>
+            <div style="display: flex; gap: 5px; justify-content: center; align-items: center;">
+                <select id="subOutSelect" style="padding: 5px; background: #333; color: #fff; border: 1px solid #555; border-radius: 4px;"></select>
+                <span>für</span>
+                <select id="subInSelect" style="padding: 5px; background: #333; color: #fff; border: 1px solid #555; border-radius: 4px;"></select>
+                <button class="sub-btn" onclick="executeSubstitution()">Wechseln</button>
+            </div>
+            <div id="subLog"><b>Wechsel-Protokoll:</b><br>Keine Auswechslungen vorgenommen.<br></div>
+        </div>
+
+        <div class="current-match-box">
+            <div id="activeMatchTitle" style="font-size: 15px; color: #aaa; font-weight: bold;">Warte auf Setup...</div>
+            <div id="activeMatchModus" style="color: #ffc107; font-size: 13px; margin-top: 2px;">-</div>
+            <div class="score-board" id="scoreDisplay">501</div>
+            <div style="font-size: 14px; color: #aaa;">Aktueller Spieler:</div>
+            <div class="big-player" id="playerTurn">-</div>
+        </div>
+
+        <div id="wurf" style="font-size: 18px; color: #ffc107; min-height: 24px; margin-bottom: 8px;">Bereit...</div>
+        <div id="history" style="font-size: 13px; color: #aaa; background: #111; padding: 8px; border-radius: 6px; width: 100%; max-height: 70px; overflow-y: auto; text-align: left; box-sizing: border-box;"><b>Letzte Würfe:</b><br></div>
+        <button onclick="skipMatch()" style="background:#444; font-size:12px; padding:6px; margin-top:10px; width:auto;">Dieses Spiel überspringen ⏩</button>
+    </div>
+</div>
+
+<div class="panel rank-panel" id="rankInterface" style="display: none;">
+    <h2>🏆 MKK Spieler-Rangliste (Live)</h2>
+    <table class="rank-table">
+        <thead>
+            <tr><th>Position</th><th>Kürzel</th><th>Spielername</th><th>MKK-Punkte</th></tr>
+        </thead>
+        <tbody id="rankTableBody"></tbody>
+    </table>
+</div>
+
+<script>
+
+    // Der komplette Spielplan der MKK-Liga
+    const ligaSpiele = [
+        { id: 1,  modus: "501 MO/Doppel", heim: "H1 + H2", gast: "G2 + G4", type: "501", reihenfolge: ["H1", "G2", "H2", "G4"] },
+        { id: 2,  modus: "501 MO/Doppel", heim: "H3 + H4", gast: "G3 + G1", type: "501", reihenfolge: ["H3", "G3", "H4", "G1"] },
+        { id: 3,  modus: "501 MO",         heim: "H1",      gast: "G1",      type: "501", reihenfolge: ["H1", "G1"] },
+        { id: 4,  modus: "501 MO",         heim: "H4",      gast: "G4",      type: "501", reihenfolge: ["H4", "G4"] },
+        { id: 5,  modus: "501 MO",         heim: "H3",      gast: "G3",      type: "501", reihenfolge: ["H3", "G3"] },
+        { id: 6,  modus: "501 MO",         heim: "H2",      gast: "G2",      type: "501", reihenfolge: ["H2", "G2"] },
+        { id: 7,  modus: "Cricket",        heim: "H4 + H1", gast: "G2 + G3", type: "cricket", reihenfolge: ["H4", "G2", "H1", "G3"] },
+        { id: 8,  modus: "Cricket",        heim: "H2 + H3", gast: "G4 + G2", type: "cricket", reihenfolge: ["H2", "G4", "H3", "G2"] },
+        { id: 9,  modus: "Cricket",        heim: "H3 + H4", gast: "G1 + G4", type: "cricket", reihenfolge: ["H3", "G1", "H4", "G4"] },
+        { id: 10, modus: "Cricket",        heim: "H1 + H2", gast: "G1 + G3", type: "cricket", reihenfolge: ["H1", "G1", "H2", "G3"] },
+        { id: 11, modus: "Cricket",        heim: "H3 + H2", gast: "G4 + G3", type: "cricket", reihenfolge: ["H3", "G4", "H2", "G3"] },
+        { id: 12, modus: "Cricket",        heim: "H1 + H4", gast: "G1 + G2", type: "cricket", reihenfolge: ["H1", "G1", "H4", "G2"] },
+        { id: 13, modus: "501 MO",         heim: "H2",      gast: "G4",      type: "501", reihenfolge: ["H2", "G4"] },
+        { id: 14, modus: "501 MO",         heim: "H1",      gast: "G2",      type: "501", reihenfolge: ["H1", "G2"] },
+        { id: 15, modus: "501 MO",         heim: "H4",      gast: "G3",      type: "501", reihenfolge: ["H4", "G3"] },
+        { id: 16, modus: "501 MO",         heim: "H3",      gast: "G1",      type: "501", reihenfolge: ["H3", "G1"] },
+        { id: 17, modus: "501 MO/Doppel", heim: "H4 + H1", gast: "G2 + G3", type: "501", reihenfolge: ["H4", "G2", "H1", "G3"] },
+        { id: 18, modus: "501 MO/Doppel", heim: "H2 + H4", gast: "G1 + G4", type: "501", reihenfolge: ["H2", "G1", "H4", "G4"] },
+        { id: 19, modus: "501 MO",         heim: "H1",      gast: "G3",      type: "501", reihenfolge: ["H1", "G3"] },
+        { id: 20, modus: "501 MO",         heim: "H4",      gast: "G2",      type: "501", reihenfolge: ["H4", "G2"] },
+        { id: 21, modus: "501 MO",         heim: "H3",      gast: "G4",      type: "501", reihenfolge: ["H3", "G4"] },
+        { id: 22, modus: "501 MO",         heim: "H2",      gast: "G1",      type: "501", reihenfolge: ["H2", "G1"] },
+        { id: 23, modus: "Cricket",        heim: "H1 + H3", gast: "G2 + G4", type: "cricket", reihenfolge: ["H1", "G2", "H3", "G4"] },
+        { id: 24, modus: "Cricket",        heim: "H3 + H1", gast: "G3 + G1", type: "cricket", reihenfolge: ["H3", "G3", "H1", "G1"] },
+        { id: 25, modus: "Cricket",        heim: "H4 + H3", gast: "G3 + G4", type: "cricket", reihenfolge: ["H4", "G3", "H3", "G4"] },
+        { id: 26, modus: "Cricket",        heim: "H2 + H1", gast: "G4 + G1", type: "cricket", reihenfolge: ["H2", "G4", "H1", "G1"] },
+        { id: 27, modus: "Cricket",        heim: "H3 + H1", gast: "G2 + G1", type: "cricket", reihenfolge: ["H3", "G2", "H1", "G1"] },
+        { id: 28, modus: "Cricket",        heim: "H2 + H3", gast: "G3 + G2", type: "cricket", reihenfolge: ["H2", "G3", "H3", "G2"] },
+        { id: 29, modus: "501 MO",         heim: "H4",      gast: "G1",      type: "501", reihenfolge: ["H4", "G1"] },
+        { id: 30, modus: "501 MO",         heim: "H3",      gast: "G2",      type: "501", reihenfolge: ["H3", "G2"] },
+        { id: 31, modus: "501 MO",         heim: "H2",      gast: "G3",      type: "501", reihenfolge: ["H2", "G3"] },
+        { id: 32, modus: "501 MO",         heim: "H1",      gast: "G4",      type: "501", reihenfolge: ["H1", "G4"] },
+        { id: 33, modus: "501 MO/Doppel", heim: "H4 + H2", gast: "G1 + G2", type: "501", reihenfolge: ["H4", "G1", "H2", "G2"] },
+        { id: 34, modus: "501 MO/Doppel", heim: "H1 + H3", gast: "G4 + G3", type: "501", reihenfolge: ["H1", "G4", "H3", "G3"] }
+    ];
+
+    const GRANBOARD_SERVICE_UUID = '0000fff0-0000-1000-8000-00805f9b34fb';
+    const GRANBOARD_NOTIFY_UUID  = '0000fff1-0000-1000-8000-00805f9b34fb';
+
+    let currentMatchIndex = 0; 
+    let currentScore = 501;
+    let heimGesamtPunkte = 0;
+    let gastGesamtPunkte = 0;
+    let activePlayerIdx = 0;
+    let dartCount = 0;
+
+    let activePlayerNames = {};
+    let spielerPunkte = {};
+
+    const connectBtn = document.getElementById('connectBtn');
+    const statusDiv = document.getElementById('status');
+    const wurfDiv = document.getElementById('wurf');
+    const scoreDisplay = document.getElementById('scoreDisplay');
+    const historyDiv = document.getElementById('history');
+
+
+    // Startet die App, sobald du im Setup auf den grünen Button klickst
+    function startLigaSpiel() {
+        const kuerzelListe = [
+            'H1','H2','H3','H4','HE1','HE2','HE3','HE4',
+            'G1','G2','G3','G4','GE1','GE2','GE3','GE4'
+        ];
+
+        // Alle Namen aus den Eingabefeldern einlesen
+        kuerzelListe.forEach(k => {
+            let name = document.getElementById(`input_${k}`).value.trim();
+            if (!name) name = k; // Falls leer, Kürzel nutzen
+            activePlayerNames[k] = name;
+            spielerPunkte[name] = 0; // Punkte-Konto für die Rangliste
+        });
+
+        // Setup verstecken, Hauptspiel und Rangliste freischalten
+        document.getElementById('setupForm').style.display = 'none';
+        document.getElementById('mainInterface').style.display = 'flex';
+        document.getElementById('rankInterface').style.display = 'block';
+
+        updateSubstitutionDropdowns();
+        renderSpielbericht();
+        updateRangliste();
+        ladeAktuellesMatch();
+    }
+
+    function renderSpielbericht() {
+        const container = document.getElementById('spielplanContainer');
+        container.innerHTML = "";
+        ligaSpiele.forEach((spiel, idx) => {
+            let statusClass = (idx === currentMatchIndex) ? "active" : (idx < currentMatchIndex ? "done" : "");
+            container.innerHTML += `
+                <div class="match-row ${statusClass}" id="row-${idx}">
+                    <div class="m-id">${spiel.id}</div>
+                    <div class="m-modus">${spiel.modus}</div>
+                    <div class="m-vs">${activePlayerNames[spiel.reihenfolge[0]]} vs. ${activePlayerNames[spiel.reihenfolge[1]]}</div>
+                    <div class="m-score" id="score-${idx}">${spiel.ergebnis || '-'}</div>
+                </div>`;
+        });
+        document.getElementById('totalLeagueScore').innerText = `Heim ${heimGesamtPunkte} : ${gastGesamtPunkte} Gast`;
+    }
+
+    function updateSubstitutionDropdowns() {
+        const outSelect = document.getElementById('subOutSelect');
+        const inSelect = document.getElementById('subInSelect');
+        outSelect.innerHTML = '<option value="">-- Wer geht raus? --</option>';
+        inSelect.innerHTML = '<option value="">-- Wer kommt rein? --</option>';
+        ['H1','H2','H3','H4'].forEach(k => outSelect.innerHTML += `<option value="${k}">Heim: ${activePlayerNames[k]}</option>`);
+        ['G1','G2','G3','G4'].forEach(k => outSelect.innerHTML += `<option value="${k}">Gast: ${activePlayerNames[k]}</option>`);
+        ['HE1','HE2','HE3','HE4'].forEach(k => inSelect.innerHTML += `<option value="${k}">Heim-Ersatz: ${activePlayerNames[k]}</option>`);
+        ['GE1','GE2','GE3','GE4'].forEach(k => inSelect.innerHTML += `<option value="${k}">Gast-Ersatz: ${activePlayerNames[k]}</option>`);
+    }
+
+    function executeSubstitution() {
+        const outKuerzel = document.getElementById('subOutSelect').value;
+        const inKuerzel = document.getElementById('subInSelect').value;
+        if (!outKuerzel || !inKuerzel) return alert("Auswahl unvollständig!");
+        if (outKuerzel.startsWith("H") !== inKuerzel.startsWith("HE")) return alert("Heim nur gegen Heim-Ersatz tauschen!");
+
+        let alterName = activePlayerNames[outKuerzel];
+        let neuerName = activePlayerNames[inKuerzel];
+        let aktSpielNummer = currentMatchIndex < ligaSpiele.length ? ligaSpiele[currentMatchIndex].id : 34;
+
+        let logBox = document.getElementById('subLog');
+        let logEintrag = `• Ab Spiel Nr. ${aktSpielNummer}: ${neuerName} für ${alterName}<br>`;
+        logBox.innerHTML = logBox.innerHTML.includes("Keine Auswechslungen") ? "<b>Wechsel-Protokoll:</b><br>" + logEintrag : logBox.innerHTML + logEintrag;
+
+        activePlayerNames[outKuerzel] = neuerName;
+        updateSubstitutionDropdowns();
+        renderSpielbericht();
+        let spiel = ligaSpiele[currentMatchIndex];
+        if (spiel) document.getElementById('playerTurn').innerText = activePlayerNames[spiel.reihenfolge[activePlayerIdx]];
+        alert("Auswechslung registriert und im Protokoll vermerkt!");
+    }
+
+
+    function updateRangliste() {
+        const tbody = document.getElementById('rankTableBody');
+        tbody.innerHTML = "";
+        let arr = [];
+        for (let name in spielerPunkte) {
+            let k = Object.keys(activePlayerNames).find(key => activePlayerNames[key] === name) || "-";
+            arr.push({ name: name, punkte: spielerPunkte[name], kuerzel: k });
+        }
+        arr.sort((a, b) => b.punkte - a.punkte);
+        arr.forEach((sp, idx) => {
+            tbody.innerHTML += `<tr><td><b>#${idx + 1}</b></td><td style="color:#ffc107;">${sp.kuerzel}</td><td>${sp.name}</td><td style="color:#00ea92;font-weight:bold;">${sp.punkte} Pkt.</td></tr>`;
+        });
+    }
+
+    function ladeAktuellesMatch() {
+        if (currentMatchIndex >= ligaSpiele.length) {
+            document.getElementById('activeMatchTitle').innerText = "🏆 SPIELTAG BEENDET!";
+            scoreDisplay.innerText = "-";
+            document.getElementById('playerTurn').innerText = "Fertig!";
+            return;
+        }
+        let spiel = ligaSpiele[currentMatchIndex];
+        document.getElementById('activeMatchTitle').innerText = `Spiel ${spiel.id}: ${spiel.modus}`;
+        activePlayerIdx = 0; dartCount = 0;
+        currentScore = (spiel.type === "501") ? 501 : 5;
+        scoreDisplay.innerText = (spiel.type === "501") ? currentScore : `Noch ${currentScore} Hits`;
+        document.getElementById('playerTurn').innerText = activePlayerNames[spiel.reihenfolge[activePlayerIdx]];
+        renderSpielbericht();
+    }
+
+    function beendeMatch(gewinnerKuerzel) {
+        let spiel = ligaSpiele[currentMatchIndex];
+        let istHeimSieg = gewinnerKuerzel.startsWith("H");
+        let winnerName = activePlayerNames[gewinnerKuerzel];
+
+        if (istHeimSieg) { heimGesamtPunkte++; spiel.ergebnis = "1 : 0"; }
+        else { gastGesamtPunkte++; spiel.ergebnis = "0 : 1"; }
+
+        spielerPunkte[winnerName] += 2;
+        if (spiel.reihenfolge.length === 4) {
+            let pK = (gewinnerKuerzel === spiel.reihenfolge[0]) ? spiel.reihenfolge[2] : 
+                     ((gewinnerKuerzel === spiel.reihenfolge[2]) ? spiel.reihenfolge[0] : 
+                     ((gewinnerKuerzel === spiel.reihenfolge[1]) ? spiel.reihenfolge[3] : spiel.reihenfolge[1]));
+            spielerPunkte[activePlayerNames[pK]] += 1;
+        }
+        currentMatchIndex++;
+        updateRangliste();
+        ladeAktuellesMatch();
+    }
+
+    function skipMatch() { if (currentMatchIndex < ligaSpiele.length) { ligaSpiele[currentMatchIndex].ergebnis = "Skipped"; currentMatchIndex++; ladeAktuellesMatch(); } }
+
+
+    function verarbeiteTreffer(bytes) {
+        if (!bytes || bytes.length < 2) return null;
+        let mult = bytes[0], wert = bytes[1];
+        if (wert === 25) return { punkte: (mult === 2 || mult === 0x82) ? 50 : 25, text: "Bull" };
+        if (wert < 1 || wert > 20) return null;
+        let art = mult & 0x0F;
+        return { punkte: wert * (art === 3 ? 3 : (art === 2 ? 2 : 1)), text: (art === 3 ? "T" : (art === 2 ? "D" : "S")) + wert };
+    }
+
+    function spieleLogikAusfuehren(treffer) {
+        let spiel = ligaSpiele[currentMatchIndex];
+        let aktK = spiel.reihenfolge[activePlayerIdx];
+        let aktName = activePlayerNames[aktK];
+        wurfDiv.innerText = `${aktName}: ${treffer.text}`;
+        historyDiv.innerHTML = `🎯 [${aktName}] ${treffer.text}<br>` + historyDiv.innerHTML.replace("<b>Letzte Würfe:</b><br>", "");
+
+        if (spiel.type === "501") {
+            if (currentScore - treffer.punkte === 0) { beendeMatch(aktK); return; }
+            else if (currentScore - treffer.punkte < 0 || currentScore - treffer.punkte === 1) { dartCount = 3; }
+            else { currentScore -= treffer.punkte; scoreDisplay.innerText = currentScore; }
+        } else {
+            currentScore--;
+            if (currentScore <= 0) { beendeMatch(aktK); return; }
+            else { scoreDisplay.innerText = `Noch ${currentScore} Hits`; }
+        }
+        dartCount++;
+        if (dartCount >= 3) { dartCount = 0; activePlayerIdx = (activePlayerIdx + 1) % spiel.reihenfolge.length; }
+        document.getElementById('playerTurn').innerText = activePlayerNames[spiel.reihenfolge[activePlayerIdx]];
+    }
+
+    connectBtn.addEventListener('click', async () => {
+        try {
+            statusDiv.innerText = "Suche GranBoard...";
+            const dev = await navigator.bluetooth.requestDevice({ filters: [{ namePrefix: 'GRANBOARD' }, { services: [GRANBOARD_SERVICE_UUID] }] });
+            const server = await dev.gatt.connect();
+            const service = await server.getPrimaryService(GRANBOARD_SERVICE_UUID);
+            const characteristic = await service.getCharacteristic(GRANBOARD_NOTIFY_UUID);
+            await characteristic.startNotifications();
+            statusDiv.innerText = "🟢 Online!"; statusDiv.style.color = "#00ea92"; connectBtn.style.display = "none";
+            characteristic.addEventListener('characteristicvaluechanged', (e) => {
+                let bytes = []; for (let i=0; i<e.target.value.byteLength; i++) bytes.push(e.target.value.getUint8(i));
+                let t = verarbeiteTreffer(bytes); if (t) spieleLogikAusfuehren(t);
+            });
+        } catch (err) { statusDiv.innerText = "Fehler: " + err.message; }
+    });
+</script>
+</body>
+</html>
+
