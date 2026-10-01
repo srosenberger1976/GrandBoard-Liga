@@ -394,10 +394,8 @@
     connectBtn.addEventListener('click', async () => {
         try {
             statusDiv.innerText = "Suche Board...";
-            const dev = await navigator.bluetooth.requestDevice({ 
-                acceptAllDevices: true,
-                optionalServices: [GRANBOARD_SERVICE_UUID] 
-            });
+     const dev = await navigator.bluetooth.requestDevice({ acceptAllDevices: true });
+
             
             statusDiv.innerText = "Verbinde...";
             const server = await dev.gatt.connect();
